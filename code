@@ -1,0 +1,172 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+import matplotlib.animation as animation
+from matplotlib import rc
+rc('animation', html='html5')
+
+#Listing the default values for the class below
+g = 9.8
+L1 = 2 #length of the pendulum in meters
+L2 = 1.5
+m1 = 1
+m2 = 1
+t_ini = 0 #initial time
+t_fin = 25 #final time
+ini_state = ([np.pi/4, 1, np.pi/3, 2]) #initial state
+T=np.linspace(t_ini, t_fin, 1000)
+n=1000
+dt=t_fin/n
+
+class Slopy:
+    
+    def __init__(self, g=9.8, m1=1, m2=1, L1=2, L2=1.5, t_ini=0, t_fin=25, state0=([np.pi/4, 5, np.pi/3, 7])):
+        self.g = g
+        self.m1 = m1
+        self.m2 = m2
+        self.L1 = L1
+        self.L2 = L2
+        self.ti = t_ini
+        self.tf = t_fin
+        self.grid = np.linspace(self.ti, self.tf, 1000)
+        self.s0 = state0
+        
+        
+    def set_param(self, m1, m2, L1, L2):
+        self.m1 = m1
+        self.m2 = m2
+        self.L1 = L1
+        self.L2 = L2
+
+    def der_state(self, t, state):
+        der = np.zeros_like(state)
+        der[0] = state[2]
+        der[1] = state[3]
+        der[2] = (-1*g*(2*m1+m2)*np.sin(state[0])-m2*g*np.sin(state[0]-2*state[1])-2*np.sin(state[0]-state[1])*m2*(state[3]**2*L2+state[2]**2*L1*np.cos(state[0]-state[1])))/(L1*(2*m1+m2-m2*np.cos(2*state[0]-2*state[1])))
+        der[3] = (2*np.sin(state[0]-state[1])*(state[2]**2*L1*(m1+m2)+g*(m1+m2)*np.cos(state[0])+state[3]**2*L2*m2*np.cos(state[0]-state[1])))/(L2*(2*m1+m2-m2*np.cos(2*state[0]-2*state[1])))
+        return der
+    
+    def solo(self):
+        sol = solve_ivp(self.der_state, (self.ti, self.tf), self.s0, t_eval=self.grid)
+        ang_pos1 = sol.y[0]
+        ang_pos2 = sol.y[1]
+        x1 = L1*np.sin(ang_pos1)
+        y1 = -L1*np.cos(ang_pos1) #the y-axis points down
+        x2 = x1+L2*np.sin(ang_pos2)
+        y2 = y1-L2*np.cos(ang_pos2)
+        return x1, x2, y1, y2
+
+solver = Slopy(m1=1)
+x1=solver.solo()[0]
+x21=solver.solo()[1]
+y1=solver.solo()[2]
+y21=solver.solo()[3]
+
+fig = plt.figure()
+ax = fig.add_subplot(111, autoscale_on=False, xlim=(-3.9, 3.9), ylim=(-4, 1.2))
+ax.grid()
+
+line, = ax.plot([], [], 'o-', lw=2)
+time_template = 'time = '
+time_text = ax.text(0.05, 0.9, '', transform=ax.transAxes)
+
+
+def init():
+    line.set_data([], [])
+    time_text.set_text('')
+    return line, time_text
+
+
+def animate(i):
+    thisx = [0, x1[i], x21[i]] #the pendulum is anchored at (0,0)
+    thisy = [0, y1[i], y21[i]]
+
+    line.set_data(thisx, thisy)
+    time_text.set_text(time_template + '{:4.1f}'.format(i*dt) + 's')
+    return line, time_text
+
+ani = animation.FuncAnimation(fig, animate, np.arange(1, len(T)),
+                              interval=20, blit=True, init_func=init)
+plt.close(fig)
+
+ani
+
+solver = Slopy(state0=[np.pi/4, 5+10**(-6), np.pi/3, 7])
+x1=solver.solo()[0]
+x22=solver.solo()[1]
+y1=solver.solo()[2]
+y22=solver.solo()[3]
+
+fig = plt.figure()
+ax = fig.add_subplot(111, autoscale_on=False, xlim=(-3.9, 3.9), ylim=(-4, 1.2))
+ax.grid()
+
+line, = ax.plot([], [], 'o-', lw=2)
+time_template = 'time = '
+time_text = ax.text(0.05, 0.9, '', transform=ax.transAxes)
+
+
+def init():
+    line.set_data([], [])
+    time_text.set_text('')
+    return line, time_text
+
+
+def animate(i):
+    thisx = [0, x1[i], x22[i]] #the pendulum is anchored at (0,0)
+    thisy = [0, y1[i], y22[i]]
+
+    line.set_data(thisx, thisy)
+    time_text.set_text(time_template + '{:4.1f}'.format(i*dt) + 's')
+    return line, time_text
+
+ani = animation.FuncAnimation(fig, animate, np.arange(1, len(T)),
+                              interval=20, blit=True, init_func=init)
+plt.close(fig)
+
+ani
+
+solver = Slopy(state0=[np.pi/4+10**(-6), 5, np.pi/3, 7])
+x1=solver.solo()[0]
+x23=solver.solo()[1]
+y1=solver.solo()[2]
+y23=solver.solo()[3]
+
+fig = plt.figure()
+ax = fig.add_subplot(111, autoscale_on=False, xlim=(-3.9, 3.9), ylim=(-4, 1.2))
+ax.grid()
+
+line, = ax.plot([], [], 'o-', lw=2)
+time_template = 'time = '
+time_text = ax.text(0.05, 0.9, '', transform=ax.transAxes)
+
+
+def init():
+    line.set_data([], [])
+    time_text.set_text('')
+    return line, time_text
+
+
+def animate(i):
+    thisx = [0, x1[i], x23[i]] #the pendulum is anchored at (0,0)
+    thisy = [0, y1[i], y23[i]]
+
+    line.set_data(thisx, thisy)
+    time_text.set_text(time_template + '{:4.1f}'.format(i*dt) + 's')
+    return line, time_text
+
+ani = animation.FuncAnimation(fig, animate, np.arange(1, len(T)),
+                              interval=20, blit=True, init_func=init)
+plt.close(fig)
+
+ani
+
+plt.plot(T, x21, 'b', T, x22, 'g', T, x23, 'r')
+plt.xlabel('t')
+plt.ylabel('x')
+plt.show()
+
+plt.plot(T, y21, 'b', T, y22, 'g', T, y23, 'r')
+plt.xlabel('t')
+plt.ylabel('y')
+plt.show()
